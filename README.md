@@ -10,7 +10,7 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"manutencao/zabbix"
+	"github.com/denisbertol/zabbixmaintenance/zabbix"
 	"os"
 	"regexp"
 	"strconv"
