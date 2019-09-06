@@ -1,5 +1,8 @@
 # zabbixmaintenance
-Project para criação automatica de manutenção no Zabbix
+Projeto de automação de criação de Manutenção no Zabbix
+Este projeto tem como objetivo automatizar a criação de Manutenções no Zabbix.
+A criação do programa visa a entrada somente das informações essencias para a criação da Manutenção, dada a dificuldade via interface web do zabbix.
+A linguagem Go foi escolhida devido a sua portabilidade de SO, ou seja, rodar da mesma maneira em Sistemas Operacionais Windows, Linux e Containers.
 
 ![Go Lang](https://miro.medium.com/max/500/1*JVNeDzW76QxT8VWiTwkLFA.gif)
 
