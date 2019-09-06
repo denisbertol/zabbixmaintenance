@@ -1,6 +1,7 @@
 package zabbix
 
 import (
+	"strings"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -43,7 +44,6 @@ func (api *API) Maintenance(method string, data interface{}) ([]Maintenance, err
 	if response.Error.Code != 0 {
 		return nil, &response.Error
 	}
-
 	res, err := json.Marshal(response.Result)
 	var ret []Maintenance
 	err = json.Unmarshal(res, &ret)
@@ -120,7 +120,12 @@ func GetMaintenance(api *API, maintenanceid string) ([]Maintenance, error) {
 	var Maintenances []Maintenance
 
 	params := make(map[string]interface{}, 0)
-	params["maintenanceid"] = maintenanceid
+	maintenanceidArray := strings.Fields(maintenanceid)
+
+	params["maintenanceids"] = maintenanceidArray
+	params["selectTimeperiods"] = "extend"
+	params["output"] = "extend"
+
 	Maintenances, err := api.Maintenance("get", params)
 	if err != nil {
 		return nil, err
@@ -148,12 +153,10 @@ func UpdateMaintenance(api *API, maintenanceid string, horariofinaltp int64) (ma
 	params["maintenanceid"] = maintenanceid
 	// Horario da finalizacao da ativacao
 	params["active_till"] = horariofinaltp
+	
+	horainicio, err := strconv.ParseInt(fmt.Sprintf("%v",mainantenceresult[0]["active_since"]), 10, 64)
 
-	str := fmt.Sprintf("%v",mainantenceresult[0]["active_since"])
-
-	horainicio, err := strconv.ParseInt(str, 10, 64)
-
-	periodo := time.Now().Unix() - horainicio
+	periodo := horariofinaltp - horainicio
 
 	var timeperiods [1]map[string]interface{}
 	timeperiod["timeperiod_type"] = 0
