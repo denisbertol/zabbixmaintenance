@@ -133,7 +133,9 @@ func HasActiveMaintenanceByHosts(api *API, Hosts []Host, HostGroups []HostGroup)
 		}
 
 		params["hostids"] = hostsids
-	} else if HostGroups != nil {
+	} 
+	
+	if HostGroups != nil {
 		// Criar Array com os hostsids
 		var hostgroupsids []string
 		for i := 0; i < len(HostGroups); i++ {
