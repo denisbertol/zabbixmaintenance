@@ -115,7 +115,7 @@ func CreateMaintenance(api *API, nome string, Hosts []Host, HostGroups []HostGro
 }
 
 // GetMaintence - Obtem um objeto host pelo nome
-func GetMaintenanceByHosts(api *API, Hosts []Host, HostGroups []HostGroup) ([]Maintenance, error) {
+func HasActiveMaintenanceByHosts(api *API, Hosts []Host, HostGroups []HostGroup) (int64, error) {
 
 	var Maintenances []Maintenance
 
@@ -147,14 +147,30 @@ func GetMaintenanceByHosts(api *API, Hosts []Host, HostGroups []HostGroup) ([]Ma
 
 	Maintenances, err := api.Maintenance("get", params)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 
 	if len(Maintenances) > 0 {
-		return Maintenances, nil
+		for i := 0; i < len(Maintenances); i++ {
+			var Maintenance Maintenance
+			Maintenance = Maintenances[i]
+			periodoinicio, err := strconv.ParseInt(fmt.Sprintf("%v",Maintenance["active_since"]), 10, 64)
+			periodofim, err := strconv.ParseInt(fmt.Sprintf("%v",Maintenance["active_till"]), 10, 64)
+			if err != nil {
+				return 0, err
+			}
+			horaAtual := time.Now().Unix()
+			if (horaAtual >= periodoinicio) && (horaAtual <= periodofim) {
+				manutid, err := strconv.ParseInt(fmt.Sprintf("%v",Maintenance["maintenanceid"]), 10, 64)
+				if err != nil {
+					return 0, err
+				}
+				return manutid, nil
+			}			
+		}
+		return 0, nil
 	}
-
-	return nil, &Error{0, "", "ERRO: MAINTENANCE nao Encontrada"}
+	return 0, nil
 }
 
 // GetMaintence - Obtem um objeto host pelo nome
