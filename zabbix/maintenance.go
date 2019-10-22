@@ -115,6 +115,49 @@ func CreateMaintenance(api *API, nome string, Hosts []Host, HostGroups []HostGro
 }
 
 // GetMaintence - Obtem um objeto host pelo nome
+func GetMaintenanceByHosts(api *API, Hosts []Host, HostGroups []HostGroup) ([]Maintenance, error) {
+
+	var Maintenances []Maintenance
+
+	params := make(map[string]interface{}, 0)
+	params["selectTimeperiods"] = "extend"
+	params["output"] = "extend"
+
+	if Hosts != nil {
+		// Criar Array com os hostsids
+		var hostsids []string
+		for i := 0; i < len(Hosts); i++ {
+			var Host Host
+			Host = Hosts[i]
+			hostsids = append(hostsids, fmt.Sprintf("%v", Host["hostid"]))
+		}
+
+		params["hostids"] = hostsids
+	} else if HostGroups != nil {
+		// Criar Array com os hostsids
+		var hostgroupsids []string
+		for i := 0; i < len(HostGroups); i++ {
+			var HostGroup HostGroup
+			HostGroup = HostGroups[i]
+			hostgroupsids = append(hostgroupsids, fmt.Sprintf("%v", HostGroup["groupid"]))
+		}
+
+		params["groupids"] = hostgroupsids
+	}
+
+	Maintenances, err := api.Maintenance("get", params)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(Maintenances) > 0 {
+		return Maintenances, nil
+	}
+
+	return nil, &Error{0, "", "ERRO: MAINTENANCE nao Encontrada"}
+}
+
+// GetMaintence - Obtem um objeto host pelo nome
 func GetMaintenance(api *API, maintenanceid string) ([]Maintenance, error) {
 
 	var Maintenances []Maintenance
