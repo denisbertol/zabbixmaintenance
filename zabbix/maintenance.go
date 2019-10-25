@@ -7,7 +7,7 @@ import (
 	"time"
 	"strconv"
 )
-
+        
 // ZabbixMaintenance - Variavel de dados do Zabbix Maintenance
 var ZabbixMaintenance map[string]interface{}
 
@@ -114,11 +114,9 @@ func CreateMaintenance(api *API, nome string, Hosts []Host, HostGroups []HostGro
 	return nil, &Error{0, "", "Erro ao criar Manutencao"}
 }
 
-// GetMaintence - Obtem um objeto host pelo nome
-func HasActiveMaintenanceByHosts(api *API, Hosts []Host, HostGroups []HostGroup) (int64, error) {
-
+// HasActiveMaintenanceByHosts - Obtem um objeto manutencao pelo host ou hostgroup
+func HasActiveMaintenanceByHosts(api *API, Hosts []Host) (int64, error) {
 	var Maintenances []Maintenance
-
 	params := make(map[string]interface{}, 0)
 	params["selectTimeperiods"] = "extend"
 	params["output"] = "extend"
@@ -133,7 +131,43 @@ func HasActiveMaintenanceByHosts(api *API, Hosts []Host, HostGroups []HostGroup)
 		}
 
 		params["hostids"] = hostsids
-	} 
+	}
+	Maintenances, err := api.Maintenance("get", params)
+	if err != nil {
+		return 0, err
+	}
+
+	if len(Maintenances) > 0 {
+		for i := 0; i < len(Maintenances); i++ {
+			var Maintenance Maintenance
+			Maintenance = Maintenances[i]
+			periodoinicio, err := strconv.ParseInt(fmt.Sprintf("%v",Maintenance["active_since"]), 10, 64)
+			periodofim, err := strconv.ParseInt(fmt.Sprintf("%v",Maintenance["active_till"]), 10, 64)
+			if err != nil {
+				return 0, err
+			}
+			horaAtual := time.Now().Unix()
+			if (horaAtual >= periodoinicio) && (horaAtual <= periodofim) {
+				manutid, err := strconv.ParseInt(fmt.Sprintf("%v",Maintenance["maintenanceid"]), 10, 64)
+				if err != nil {
+					return 0, err
+				}
+				return manutid, nil
+			}			
+		}
+		return 0, nil
+	}
+	return 0, nil
+}
+
+// HasActiveMaintenanceByHosts - Obtem um objeto manutencao pelo host ou hostgroup
+func HasActiveMaintenanceByHostGroups(api *API, HostGroups []HostGroup) (int64, error) {
+
+	var Maintenances []Maintenance
+
+	params := make(map[string]interface{}, 0)
+	params["selectTimeperiods"] = "extend"
+	params["output"] = "extend"
 	
 	if HostGroups != nil {
 		// Criar Array com os hostsids
@@ -238,4 +272,4 @@ func UpdateMaintenance(api *API, maintenanceid string, horariofinaltp int64) (ma
 	}
 
 	return nil, &Error{0, "", "Erro ao criar Manutencao"}
-}
+} 
